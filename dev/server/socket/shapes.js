@@ -16,6 +16,10 @@ const shapeHandler = (io) => {
             // switch message.type
             console.log('received shape data: ', message);
     
+            if (!message.type || !~['star', 'hexagon'].indexOf(message.type)) {
+                return;
+            }
+
             if (!message.id) {
                 message.id = randomUUID();
             }
@@ -26,7 +30,7 @@ const shapeHandler = (io) => {
                 console.log('return shape: ', message);
                 socket.emit('shape', message);
                 socket.broadcast.emit('shape', message);
-                socket.emit('message', createShapeMessage('Lukas', `created shape at (${message.x}|${message.y})`));
+                socket.emit('message', createShapeMessage('Lukas', `created ${message.type} at ( ${Math.round(message.x*100)/100} | ${Math.round(message.y*100)/100} )`));
             }
         };
     
