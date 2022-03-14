@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useSocketContext } from "../contexts/socket";
-import Spacer from './Spacer.component';
+import Spacer from './Spacer.control';
 
 const TestControls = ({ title }) => {
 

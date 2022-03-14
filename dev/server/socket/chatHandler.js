@@ -2,16 +2,15 @@
 
 import { createMessage } from '../utils/Messages.js';
 
-const chatHandler = (io) => {
+const chatHandler = (io, pool, emitter) => {
     // chat
-    let numUsers = 0, interval;
     io.on("connection", (socket) => {
 
-        console.log(`new chat connection from ${socket.id}`);
-
+        emitter.serverSideEmit("status", `Chat server is up for ${socket.id}`);
 
         const handleMessage = (message) => {
-            console.log('received message', message);
+            emitter.serverSideEmit("status", "Chat: message received");
+
             // socket.broadcast.emit('message', message);
             const outMessage = createMessage('chat', 'username', 'received message: ' + message, Date.now());
             socket.emit('message', outMessage);
@@ -19,9 +18,8 @@ const chatHandler = (io) => {
 
         socket.on('message', handleMessage);
 
-
         socket.on('disconnect', () => {
-            console.log('disconnect chat server!');
+            emitter.serverSideEmit("status", "Chat server disconnected");
             socket.off("message", handleMessage);
             // clearInterval(interval);
             // clean up

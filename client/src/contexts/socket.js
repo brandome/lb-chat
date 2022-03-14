@@ -1,8 +1,8 @@
-import React, { useReducer, useState, useEffect } from "react";
+import React, { useReducer, useState, useEffect, useCallback } from "react";
 import { io } from "socket.io-client";
 
-const ip = process.env.REACT_APP_IP || 'localhost';
-const port = process.env.PORT || '8080';
+const ip = process.env.REACT_APP_SOCKET_SERVER || 'localhost';
+const port = process.env.REACT_APP_SOCKET_PORT || '8080';
 const URL = `ws://${ip}:${port}`;
 
 export const socket = io(URL, {
@@ -21,7 +21,9 @@ const actions = {
 
     CREATE_SHAPE: "CREATE_SHAPE",
     ADD_SHAPE: "ADD_SHAPE",
-    CLEAR_SHAPES: "CLEAR_SHAPES"
+    CLEAR_SHAPES: "CLEAR_SHAPES",
+    SEED_SHAPES: "SEED_SHAPES",
+    DELETE_SHAPE: "DELETE_SHAPE"
     // remove
 };
 
@@ -45,6 +47,19 @@ const reducer = (state, action) => {
                     action.payload
                 ]
             }
+        case actions.SEED_SHAPES:
+            return {
+                ...state,
+                shapes: [
+                    ...action.payload
+                ]
+            }
+        case actions.DELETE_SHAPE:
+            return {
+                ...state,
+                shapes: state.shapes.filter(s => s.id !== action.payload)
+                
+            }
         default:
             return state;
     }
@@ -58,24 +73,34 @@ export const useSocketContext = () => {
 };
 
 export const SocketContextProvider = ({children}) => {
+    
+    const [ state, dispatch ] = useReducer(reducer, initialState);
 
-    const handleShape = (shape) => {
-        console.log("HANDLE SHAPE");
+
+    const handleShape = useCallback((shape) => {
         dispatch({type: actions.ADD_SHAPE, payload: shape});
-    }
+    }, []);
+
+    const handleDeletedShape = useCallback((shapeId) => {
+        dispatch({type: actions.DELETE_SHAPE, payload: shapeId});
+    }, []);
+
+    const handleInitialLoad = useCallback((shapes) => {
+        dispatch({type: actions.SEED_SHAPES, payload: shapes});
+    }, []);
 
     useEffect(() => {
         
-        console.log('attach shape listener');
         socket.on('shape', handleShape);
+        socket.on('allShapes', handleInitialLoad);
+        socket.on('deletedShape', handleDeletedShape);
 
         return (() => {
-            console.log('detach shape listener');
             socket.off('shape', handleShape);
-        })
-    }, []);
+            socket.off('allShapes', handleInitialLoad);
+        });
+    }, [socket]);
 
-    const [ state, dispatch ] = useReducer(reducer, initialState);
 
     const value = {
         socket: socket,
@@ -87,8 +112,13 @@ export const SocketContextProvider = ({children}) => {
             dispatch({type: actions.CLEAR_MESSAGES}),
 
         createShape: (shape) => {
-            console.log('CLIENT: create shape');
             socket.emit('createShape', shape);
+        },
+        moveShape: (shape) => {
+            socket.emit('moveShape', shape);
+        },
+        deleteShape: (shape) => {
+            socket.emit('deleteShape', shape);
         },
         clearShapes: () => 
             dispatch({type: actions.CLEAR_SHAPES})

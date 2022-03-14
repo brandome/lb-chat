@@ -134,5 +134,15 @@
   position: absolute;
   z-index: 3;
   pointer-events: none;
-  /* pointer-events: visibleFill; */
+  /* pointer-events: all; */
+  cursor: default;
+}
+
+.canvas-shapes path {
+  fill: red;
+  pointer-events: visibleFill;
+}
+
+.canvas-shapes:hover {
+  cursor: grab;
 }
