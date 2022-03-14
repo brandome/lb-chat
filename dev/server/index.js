@@ -71,3 +71,7 @@ emitter.serverSideEmit("status", "HTTP static serve build");
 
 chatHandler(io, pool, emitter);
 shapeHandler(io, pool, emitter);
+
+app.get('/api/shapes', (req, res) => {
+    res.send('get shapes');
+});

@@ -18,10 +18,12 @@ const shapeHandler = (io, pool, emitter) => {
                 return;
             }
             
-            pool.query(`
-            INSERT INTO ${process.env.SHAPES_DB}(board,type,position)
-            VALUES (1,$1,POINT($2,$3)) RETURNING id,type,position;`
-            , [message.type, message.x, message.y], (err, res) => {
+            const query = `
+            INSERT INTO ${process.env.SHAPES_DB}(type,position,board)
+            VALUES ($1,POINT($2,$3),$4) RETURNING id,type,position,board;`;
+
+            pool.query(query
+            , [message.type, message.x, message.y, message.board], (err, res) => {
                 if (err) {
                     emitter.emit('message', createMessage('error', 'Lukas', err)); // createErrorMessage
                 } else {
@@ -75,14 +77,14 @@ const shapeHandler = (io, pool, emitter) => {
         socket.on("getAllShapes", (request) => {
 
             
-            let query = `select id,type,position from ${process.env.SHAPES_DB} WHERE board=1`;
+            let query = `select id,type,position from ${process.env.SHAPES_DB} WHERE board=$1`;
             query += 'ORDER BY id ASC ';
             
             query += ";";
-            
-            pool.query(query, [], (err, res) => {
+
+            pool.query(query, [request], (err, res) => {
                 if (err) throw err;
-                emitter.serverSideEmit("status", `Shape: seeded shapes for ${socket.id}`);
+                emitter.serverSideEmit("status", `Shape: seeded shapes for board ${request}: ${socket.id}`);
                 emitter.emit("allShapes", res.rows);
             })
         })

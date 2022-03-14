@@ -3,9 +3,11 @@ import { useSocketContext } from '../contexts/socket.js';
 import { Hexagon, Star } from './Shapes.js';
 
 import useWindowDimensions from '../utils/windowDimensions';
+import { useParams } from "react-router-dom";
 
 const Canvas = () => {
 
+    const { canvasId } = useParams();
     const { width, height } = useWindowDimensions();
 
     const canvasRef = useRef();
@@ -73,15 +75,16 @@ const Canvas = () => {
         const rect = {
             type: e.metaKey ? "star" : "hexagon",
             x: clicked[0] / dimensions.width * 800,
-            y: clicked[1] / dimensions.height * 600
+            y: clicked[1] / dimensions.height * 600,
+            board: canvasId
         };
 
         createShape(rect);
-    }, [socket, createShape, dimensions]);
+    }, [socket, createShape, dimensions, canvasId]);
 
     useEffect(() => {
-        socket.emit('getAllShapes');
-    }, [socket]);
+        socket.emit('getAllShapes', canvasId);
+    }, [socket, canvasId]);
 
 
     const handleMouseDown = (e, s) => {
