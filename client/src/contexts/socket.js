@@ -23,6 +23,7 @@ const actions = {
     ADD_SHAPE: "ADD_SHAPE",
     CLEAR_SHAPES: "CLEAR_SHAPES",
     SEED_SHAPES: "SEED_SHAPES",
+    EDIT_SHAPE: "EDIT_SHAPE",
     DELETE_SHAPE: "DELETE_SHAPE"
     // remove
 };
@@ -54,6 +55,16 @@ const reducer = (state, action) => {
                     ...action.payload
                 ]
             }
+        case actions.EDIT_SHAPE:
+            return {
+                ...state,
+                shapes: state.shapes.map(s => {
+                    if (s.id !== action.payload.id) {
+                        return s;
+                    }
+                    return action.payload;
+                })
+            };
         case actions.DELETE_SHAPE:
             return {
                 ...state,
@@ -89,15 +100,22 @@ export const SocketContextProvider = ({children}) => {
         dispatch({type: actions.SEED_SHAPES, payload: shapes});
     }, []);
 
+    const handleShapeUpdated = useCallback((shape) => {
+        dispatch({type: actions.EDIT_SHAPE, payload: shape});
+    }, []);
+
     useEffect(() => {
         
         socket.on('shape', handleShape);
         socket.on('allShapes', handleInitialLoad);
+        socket.on('updatedShape', handleShapeUpdated);
         socket.on('deletedShape', handleDeletedShape);
 
         return (() => {
             socket.off('shape', handleShape);
             socket.off('allShapes', handleInitialLoad);
+            socket.off('updatedShape', handleShapeUpdated);
+            socket.off('deletedShape', handleDeletedShape);
         });
     }, [socket]);
 

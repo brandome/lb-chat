@@ -1,6 +1,7 @@
 # Socket.io chat
 
 Contains Client and Server for a simple socket.io based react app.
+It uses postgres to store a single board instance, where you can place, move, and delete shapes.
 
 You can start client and server independently, or just serve the static build from the client app via express server.
 
@@ -42,3 +43,7 @@ simply build the client
 ```
 
 and the server will host it on the provided PORT.
+
+### Start postgres
+
+If you don't have it on your machine already, [install postgres](https://wiki.postgresql.org/wiki/Homebrew).

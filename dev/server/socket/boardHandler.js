@@ -25,7 +25,7 @@ const shapeHandler = (io, pool, emitter) => {
                 if (err) {
                     emitter.emit('message', createMessage('error', 'Lukas', err)); // createErrorMessage
                 } else {
-                    emitter.serverSideEmit("status", `Shape: created ${res.rows[0].id}`);
+                    emitter.serverSideEmit("status", `Shape: created ${message.id}`);
                     emitter.emit('shape', res.rows[0]);
                 }
             });
@@ -37,7 +37,7 @@ const shapeHandler = (io, pool, emitter) => {
 
             pool.query(query, [`(${message.position.x},${message.position.y})`, message.id], (err, res) => {
                 if (err) throw err;
-                emitter.serverSideEmit("status", `Shape: moved ${res.rows[0].id}`);
+                emitter.serverSideEmit("status", `Shape: moved ${message.id}`);
                 emitter.emit('updatedShape', message);
             })
             // TODO update
@@ -57,7 +57,7 @@ const shapeHandler = (io, pool, emitter) => {
         }
     
         pool.on('shape', (shape) => {
-            emitter.serverSideEmit("status", `POOL: distribute shape ${res.rows[0].id}`);
+            emitter.serverSideEmit("status", `POOL: distribute shape ${shape.id}`);
             socket.emit('shape', shape);
         })
 
